@@ -111,18 +111,18 @@ def infercnv(
     var = tmp_adata.var.loc[:, ["chromosome", "start", "end"]]  # type: ignore
 
     chr_pos, chunks = zip(
-
-        _infercnv_chunk,
-        [expr[i: i + chunksize, :] for i in range(0, adata.shape[0], chunksize)],
-        itertools.repeat(var),
-        itertools.repeat(reference),
-        itertools.repeat(lfc_clip),
-        itertools.repeat(window_size),
-        itertools.repeat(step),
-        itertools.repeat(dynamic_threshold),
-        tqdm_class=tqdm,
-        max_workers=cpu_count() if n_jobs is None else n_jobs,
-
+        *process_map(
+            _infercnv_chunk,
+            [expr[i : i + chunksize, :] for i in range(0, adata.shape[0], chunksize)],
+            itertools.repeat(var),
+            itertools.repeat(reference),
+            itertools.repeat(lfc_clip),
+            itertools.repeat(window_size),
+            itertools.repeat(step),
+            itertools.repeat(dynamic_threshold),
+            tqdm_class=tqdm,
+            max_workers=cpu_count() if n_jobs is None else n_jobs,
+        )
     )
     res = scipy.sparse.vstack(chunks)
 
